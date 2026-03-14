@@ -1,0 +1,9 @@
+{
+  "name": "crab-chat",
+  "version": "1.0.0",
+  "description": "Chat with Crab 🦀",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
