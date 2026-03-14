@@ -6,6 +6,25 @@ const PORT = process.env.PORT || 3000;
 const messages = []; // {id, user, sender, text, time}
 let nextId = 1;
 
+// Discord notification (set DISCORD_TOKEN env var on Render)
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+const DISCORD_DM_CHANNEL = '1482222296856002680';
+
+async function notifyDiscord(text) {
+  if (!DISCORD_TOKEN) return;
+  try {
+    const body = JSON.stringify({ content: `🦀 **Crab Chat:** ${text}` });
+    const res = await fetch(`https://discord.com/api/v10/channels/${DISCORD_DM_CHANNEL}/messages`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bot ${DISCORD_TOKEN}`, 'Content-Type': 'application/json' },
+      body
+    });
+    if (!res.ok) console.log('Discord notify failed:', res.status);
+  } catch (e) {
+    console.log('Discord notify error:', e.message);
+  }
+}
+
 function readBody(req) {
   return new Promise((resolve) => {
     let body = '';
@@ -39,6 +58,7 @@ const server = http.createServer(async (req, res) => {
     const msg = { id: nextId++, user: body.user || 'anon', sender: 'user', text: body.text, time: new Date().toLocaleTimeString() };
     messages.push(msg);
     console.log(`[MSG] ${msg.user}: ${msg.text}`);
+    notifyDiscord(`${msg.user}: "${msg.text}"`);
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify({ok: true, id: msg.id}));
     return;
